@@ -39,43 +39,47 @@ function getData() {
         // retrieve data
         let samples = data.samples.map(samples => { return samples })
 
-        // filter sample data and update bar chart using filtered data
+        // filter sample data and update charts using filtered data
         let filteredData = samples.filter(idFilter)
-        updateBar(filteredData)
+        updateCharts(filteredData)
     })
 }
 
 
-// create horizontal plot
-function updateBar(data) {
+// create charts
+function updateCharts(data) {
+
+    //////////////////////////////////////////////////////////////////////////
+    // Bar Chart
+    //////////////////////////////////////////////////////////////////////////
 
     // select values from data
-    let barVal = data.map(samples => { return samples.sample_values })
+    let sampleValues = data.map(samples => { return samples.sample_values })
     // select top 10
-    let barValTop = barVal[0].slice(0,10)
+    let barX = sampleValues[0].slice(0,10)
 
     // select ids from data
-    let barIds = data.map(samples => { return samples.otu_ids })
+    let sampleIds = data.map(samples => { return samples.otu_ids })
     // select top 10 and convert to string
-    let barIdsTop = barIds[0].slice(0,10).map(String)
+    let sampleIdsTop = sampleIds[0].slice(0,10).map(String)
     // append otu to each id value
-    let barIdsTopString = []
-    barIdsTop.forEach(id => {
+    let barY = []
+    sampleIdsTop.forEach(id => {
         id = "otu" + " " + id
-        barIdsTopString.push(id)
+        barY.push(id)
     })
 
     // select labels from data
-    let barLabels = data.map(samples => { return samples.otu_labels })
+    let sampleLabels = data.map(samples => { return samples.otu_labels })
     // select top 10
-    let barLabelsTop = barLabels[0].slice(0,10)
+    let barLabels = sampleLabels[0].slice(0,10)
 
-    // create bar chart
-    var data = [{
+    // bar chart data
+    let barData = [{
         type: 'bar',
-        x: barValTop,
-        y: barIdsTopString,
-        text: barLabelsTop,
+        x: barX,
+        y: barY,
+        text: barLabels,
         orientation: 'h',
         transforms: [{
             type: 'sort',
@@ -83,8 +87,47 @@ function updateBar(data) {
             order: 'ascending'
             }]
         }]
-    Plotly.newPlot('bar', data)
+    
+    // create bar chart
+    Plotly.newPlot('bar', barData)
+
+    //////////////////////////////////////////////////////////////////////////
+    // Bubble Chart
+    //////////////////////////////////////////////////////////////////////////
+    
+    let trace1 = {
+        x: sampleIds[0],
+        y: sampleValues[0],
+        text: sampleLabels[0],
+        mode: 'markers',
+        marker: {
+          color: sampleIds[0],
+          colorscale: 'Earth',
+          size: sampleValues[0]
+        }
+      };
+      
+    let bubbleData = [trace1];
+    
+    let bubbleLayout = {
+        showlegend: false,
+        margin: {'t': 0},
+        xaxis: {
+            title: {
+                text: 'OTU ID'
+            }
+        }
+    };
+    
+    Plotly.newPlot('bubble', bubbleData, bubbleLayout, {responsive: true});
+
+    
+
+
+
+
 }
+
 
 
 
