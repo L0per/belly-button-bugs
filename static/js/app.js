@@ -12,7 +12,7 @@ function init() {
 
         // retrieve data
         let ids = data.samples.map(samples => { return samples.id })
-    
+
         // populate dropdownmenu with ids
         ids.forEach(id => {
             dropdownMenu.append("option").attr("value", id).text(id)
@@ -29,6 +29,9 @@ function idFilter(id) {
     if (id.id === dropdownMenu.property("value")) {
         return id
     }
+    else if (id.id === parseInt(dropdownMenu.property("value"))) {
+        return id
+    }
 }
 
 
@@ -38,10 +41,15 @@ function getData() {
 
         // retrieve data
         let samples = data.samples.map(samples => { return samples })
+        let metaData = data.metadata.map(metadata => { return metadata })
 
         // filter sample data and update charts using filtered data
         let filteredData = samples.filter(idFilter)
         updateCharts(filteredData)
+
+        // filter metadata and update demographic info table
+        let filteredMetaData = metaData.filter(idFilter)
+        updateDemoInfo(filteredMetaData[0])
     })
 }
 
@@ -56,12 +64,12 @@ function updateCharts(data) {
     // select values from data
     let sampleValues = data.map(samples => { return samples.sample_values })
     // select top 10
-    let barX = sampleValues[0].slice(0,10)
+    let barX = sampleValues[0].slice(0, 10)
 
     // select ids from data
     let sampleIds = data.map(samples => { return samples.otu_ids })
     // select top 10 and convert to string
-    let sampleIdsTop = sampleIds[0].slice(0,10).map(String)
+    let sampleIdsTop = sampleIds[0].slice(0, 10).map(String)
     // append otu to each id value
     let barY = []
     sampleIdsTop.forEach(id => {
@@ -72,7 +80,7 @@ function updateCharts(data) {
     // select labels from data
     let sampleLabels = data.map(samples => { return samples.otu_labels })
     // select top 10
-    let barLabels = sampleLabels[0].slice(0,10)
+    let barLabels = sampleLabels[0].slice(0, 10)
 
     // bar chart data
     let barData = [{
@@ -85,63 +93,56 @@ function updateCharts(data) {
             type: 'sort',
             target: 'x',
             order: 'ascending'
-            }]
         }]
-    
+    }]
+
     // create bar chart
     Plotly.newPlot('bar', barData)
 
     //////////////////////////////////////////////////////////////////////////
     // Bubble Chart
     //////////////////////////////////////////////////////////////////////////
-    
-    let trace1 = {
+
+    // bubble chart data
+    let bubbleData = [{
         x: sampleIds[0],
         y: sampleValues[0],
         text: sampleLabels[0],
         mode: 'markers',
         marker: {
-          color: sampleIds[0],
-          colorscale: 'Earth',
-          size: sampleValues[0]
+            color: sampleIds[0],
+            colorscale: 'Earth',
+            size: sampleValues[0]
         }
-      };
-      
-    let bubbleData = [trace1];
-    
+    }]
+
+    // bubble chart layout
     let bubbleLayout = {
         showlegend: false,
-        margin: {'t': 0},
+        margin: { 't': 0 },
         xaxis: {
             title: {
                 text: 'OTU ID'
             }
         }
-    };
-    
-    Plotly.newPlot('bubble', bubbleData, bubbleLayout, {responsive: true});
+    }
 
-    
-
-
-
-
+    // create bubble chart
+    Plotly.newPlot('bubble', bubbleData, bubbleLayout, { responsive: true })
 }
 
 
+// create metadata table
+function updateDemoInfo(data) {
 
+    // select metadata panel
+    let demoInfo = d3.select('#metadata')
 
+    // clear table
+    demoInfo.html('')
 
-// let ids = data.samples.map(samples => {
-//     return samples.id;
-// });
-// let sampleValues = data.samples.map(samples => {
-//     return samples.sample_values;
-// });
-// let otuIds = data.samples.map(samples => {
-//     return samples.otu_ids;
-// })
-// let otuLabels = data.samples.map(samples => {
-//     return samples.otu_labels;
-// })
-// let selectedID = data.samples.filter(idFilter)
+    // add each metadata object entry to metadata panel
+    Object.entries(data).forEach(([key, value]) => {
+        demoInfo.append('li').attr('class', 'list-group-item').text(`${key}: ${value}`)
+      })
+}
