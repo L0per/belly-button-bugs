@@ -4,8 +4,9 @@ var dropdownMenu = d3.select("#selDataset")
 // update charts when new id is selected in dropdown menu
 d3.selectAll("#selDataset").on("change", getData)
 
-
+////////////////////////////////
 // initial setup
+////////////////////////////////
 init()
 function init() {
     d3.json("samples.json").then(data => {
@@ -23,8 +24,9 @@ function init() {
     })
 }
 
-
+////////////////////////////////
 // dropdown menu filter
+////////////////////////////////
 function idFilter(id) {
     if (id.id === dropdownMenu.property("value")) {
         return id
@@ -34,8 +36,9 @@ function idFilter(id) {
     }
 }
 
-
+////////////////////////////////
 // retrieve data and filter based on dropdown menu selection
+////////////////////////////////
 function getData() {
     d3.json("samples.json").then(data => {
 
@@ -43,19 +46,20 @@ function getData() {
         let samples = data.samples.map(samples => { return samples })
         let metaData = data.metadata.map(metadata => { return metadata })
 
-        // filter sample data and update charts using filtered data
+        // filter data
         let filteredData = samples.filter(idFilter)
-        updateCharts(filteredData)
-
-        // filter metadata and update demographic info table
         let filteredMetaData = metaData.filter(idFilter)
+
+        // update charts and demo info panel
+        updateCharts(filteredData, filteredMetaData[0].wfreq)
         updateDemoInfo(filteredMetaData[0])
     })
 }
 
-
+////////////////////////////////
 // create charts
-function updateCharts(data) {
+////////////////////////////////
+function updateCharts(data, wfreq) {
 
     //////////////////////////////////////////////////////////////////////////
     // Bar Chart
@@ -96,8 +100,16 @@ function updateCharts(data) {
         }]
     }]
 
+    let barLayout = {
+        margin: { 
+            'r': 0,
+            't': 50,
+            'b': 25
+        }
+    }
+
     // create bar chart
-    Plotly.newPlot('bar', barData)
+    Plotly.newPlot('bar', barData, barLayout)
 
     //////////////////////////////////////////////////////////////////////////
     // Bubble Chart
@@ -112,7 +124,11 @@ function updateCharts(data) {
         marker: {
             color: sampleIds[0],
             colorscale: 'Earth',
-            size: sampleValues[0]
+            size: sampleValues[0],
+            line: {
+                color: 'white',
+                width: 2
+            }
         }
     }]
 
@@ -129,10 +145,39 @@ function updateCharts(data) {
 
     // create bubble chart
     Plotly.newPlot('bubble', bubbleData, bubbleLayout, { responsive: true })
+
+    //////////////////////////////////////////////////////////////////////////
+    // Gauge Chart
+    //////////////////////////////////////////////////////////////////////////
+    
+    var data = [
+        {
+            domain: { x: [0, 1], y: [0, 1] },
+            value: wfreq,
+            title: { text: "Belly Button Washes per Week" },
+            type: "indicator",
+            mode: "gauge+number",
+            gauge: {
+                axis: {range: [null, 9]},
+                bar: { color: "#deff8b" }
+            }
+        }
+    ];
+    
+    var layout = {
+        margin: {
+            't': 0,
+            'b': 0,
+            'l': 0,
+            'r': 0
+        }
+    }
+    Plotly.newPlot('gauge', data, layout);
 }
 
-
+////////////////////////////////
 // create metadata table
+////////////////////////////////
 function updateDemoInfo(data) {
 
     // select metadata panel
