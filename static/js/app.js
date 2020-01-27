@@ -6,6 +6,8 @@ d3.selectAll("#selDataset").on("change", getData)
 
 ////////////////////////////////
 // initial setup
+// retrieves data, populates dropdownmenu
+// @returns: nothing, calls getData function to create charts
 ////////////////////////////////
 init()
 function init() {
@@ -26,6 +28,8 @@ function init() {
 
 ////////////////////////////////
 // dropdown menu filter
+// @inputs: data to be filtered
+// @returns: filtered data based on dropdown menu id selection
 ////////////////////////////////
 function idFilter(id) {
     if (id.id === dropdownMenu.property("value")) {
@@ -37,7 +41,8 @@ function idFilter(id) {
 }
 
 ////////////////////////////////
-// retrieve data and filter based on dropdown menu selection
+// retrieve data, filter based on dropdown menu selection
+// @returns: nothing, calls updateCharts and updateDmoInfo with filtered data to refresh page
 ////////////////////////////////
 function getData() {
     d3.json("samples.json").then(data => {
@@ -58,6 +63,8 @@ function getData() {
 
 ////////////////////////////////
 // create charts
+// @inputs: id filtered data and id filtered wash frequency
+// @returns: nothing, creates/updates charts
 ////////////////////////////////
 function updateCharts(data, wfreq) {
 
@@ -150,33 +157,41 @@ function updateCharts(data, wfreq) {
     // Gauge Chart
     //////////////////////////////////////////////////////////////////////////
     
-    var data = [
+    
+
+    let gaugeData = [
         {
-            domain: { x: [0, 1], y: [0, 1] },
             value: wfreq,
             title: { text: "Belly Button Washes per Week" },
             type: "indicator",
             mode: "gauge+number",
             gauge: {
-                axis: {range: [null, 9]},
+                axis: {
+                    range: [null, 10],
+                    tickmode: 'array',
+                    tickvals: [1,2,3,4,5,6,7,8,9,10],
+                    ticktext: [1,2,3,4,5,6,7,8,9,10]
+                },
                 bar: { color: "#deff8b" }
             }
         }
     ];
     
-    var layout = {
+    let gaugeLayout = {
         margin: {
             't': 0,
             'b': 0,
-            'l': 0,
-            'r': 0
+            'l': 30,
+            'r': 30
         }
     }
-    Plotly.newPlot('gauge', data, layout);
+    Plotly.newPlot('gauge', gaugeData, gaugeLayout);
 }
 
 ////////////////////////////////
-// create metadata table
+// create demographic/metadata table
+// @inputs: id filtered data
+// @returns: nothing, updates demographic table
 ////////////////////////////////
 function updateDemoInfo(data) {
 
